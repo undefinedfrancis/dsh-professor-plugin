@@ -1,0 +1,7 @@
+# Folder save repair
+
+Real desktop error: FS_SANDBOX_DENIED writing the selected folder's .professor/project.yaml. Internal setup launch used desktop cwd rather than the selected folder. Launch now accepts a bounded setup folder only for course-free free-mode sessions; native workspace creation uses that cwd. Retries cannot reuse a session from another folder. Changing folder clears the prior setup ID. Existing tool and filesystem permissions remain enforced.
+
+Failing regression proved wrong cwd; fix passes. Actual desktop scan/save connected /Users/<user>/Documents/courses/<academic-folder> and displayed configured courses. Existing course records were preserved; discovery also added unspecified-term registrations alongside existing term-specific records. This needs a separate existing-course reconciliation follow-up; no records were deleted.
+
+Actual index encountered a 46 MB ZIP and failed its bounded hash read. Oversized files are now skipped during discovery and counted explicitly; a sparse archive regression first failed, then passed. Real desktop rebuild indexed 183 files and reported 7 skipped entries. Extraction then failed with undefined.trim; chunking a Markdown ATX heading immediately followed by a divider reproduces the exact exception. Setext detection now requires a preceding body line. Regression RED→GREEN, final full suite 461/461. Desktop restarted with the parsing fix; final real extraction remains unverified. Source course materials are unchanged; configuration writes occur only under the chosen .professor directory.

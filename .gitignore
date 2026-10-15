@@ -1,0 +1,28 @@
+# Local dependencies and generated output
+node_modules/
+coverage/
+*.tgz
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Local assistant memory and historical file backups
+.workbuddy/
+*.bak-*
+
+# Credentials and local environment overrides
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Local-only personal and machine content — never published to the public repository.
+# These three are untracked directories, so the npm tarball whitelist already excludes them;
+# nothing constrained `git add -A`. See docs/PUBLICATION.md for the full publication inventory
+# and for each privacy decision. Excluding them keeps the local originals — it never deletes them.
+#   professor-skills/ : personal profile, real course registry, learning-state snapshots
+#   .serena/          : local language-server tooling state (project.yml, symbol cache)
+#   docs/qa/          : dated QA evidence with run-specific absolute paths and model outputs
+professor-skills/
+.serena/
+docs/qa/

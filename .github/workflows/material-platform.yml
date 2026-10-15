@@ -1,0 +1,51 @@
+name: Material recognition platform acceptance
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  recognition:
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            platform: darwin-arm64
+            python_arch: arm64
+          - runner: macos-15-intel
+            platform: darwin-x64
+            python_arch: x64
+          - runner: ubuntu-24.04
+            platform: linux-x64
+            python_arch: x64
+          - runner: ubuntu-24.04-arm
+            platform: linux-arm64
+            python_arch: arm64
+          - runner: windows-2022
+            platform: win32-x64
+            python_arch: x64
+          - runner: windows-11-arm
+            platform: win32-arm64
+            python_arch: x64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: '3.12'
+          architecture: ${{ matrix.python_arch }}
+      - name: Prepare and exercise real OCR and tables
+        env:
+          PROFESSOR_BOOTSTRAP_PYTHON: ${{ steps.python.outputs.python-path }}
+          PROFESSOR_ACCEPTANCE_PLATFORM: ${{ matrix.platform }}
+        run: node tools/verify-material-platform.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: material-${{ matrix.platform }}
+          path: material-platform-report.json

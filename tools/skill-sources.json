@@ -1,0 +1,404 @@
+{
+  "version": 1,
+  "note": "Declarative mapping from the Hermes/Personal-Agent sources to the six bundled Professor skills. Each check is two-sided: `sourceAnchor` must match the SOURCE file (proving the behaviour exists upstream) and `pluginPattern` must match the PLUGIN skill (proving it was carried over). A source whose anchor no longer matches means the upstream rule changed and the port must be re-reviewed: the verifier fails rather than silently drifting.",
+  "placeholders": {
+    "${PERSONAL_AGENT_ROOT}": "the dependency workspace that holds the learning-agent sources",
+    "${PROFESSOR_SOUL}": "the Hermes Professor persona (read-only reference)"
+  },
+  "portability": {
+    "rule": "A bundled skill may name a Hermes / Personal-Agent location only inside a `## …` section whose heading contains \"Optional\", where it is an explicit, user-initiated import of pre-existing data. Everywhere else the skill addresses Professor-owned state (`.professor/…`) through `professor_*` tools. `verify-skill-sync.mjs` enforces this against the delivered text.",
+    "legacyTokens": [
+      "01_Learning",
+      "Knowledge/",
+      "Registry/COURSES",
+      "Registry/Courses/",
+      "COURSES_TEMPLATE",
+      "00_System",
+      "PATHS.md",
+      "Personal-Agent",
+      "06_Shared",
+      "05_Skills",
+      "04_Agents",
+      "${PERSONAL_AGENT_ROOT}",
+      "${PROJECTS_ROOT}"
+    ],
+    "optionalSections": {
+      "professor-course-management": [
+        "Optional: importing an existing Personal-Agent registry"
+      ]
+    },
+    "personaFile": "cordis.patch.yml",
+    "personaMayNotContain": [
+      "01_Learning",
+      "Knowledge/",
+      "Registry/COURSES",
+      "PATHS.md",
+      "Personal-Agent",
+      "06_Shared",
+      "/Users/"
+    ]
+  },
+  "skills": {
+    "professor-course-management": {
+      "sources": [
+        "${PERSONAL_AGENT_ROOT}/05_Skills/learning/course-manager/SKILL.md",
+        "${PERSONAL_AGENT_ROOT}/01_Learning/Registry/COURSES.md",
+        "${PERSONAL_AGENT_ROOT}/01_Learning/Registry/COURSES_TEMPLATE.md"
+      ],
+      "checks": [
+        {
+          "label": "a new course is created from a declared schema, not a free-form file",
+          "sourceAnchor": "COURSE_TEMPLATE\\.md",
+          "pluginPattern": "professor_course_manage"
+        },
+        {
+          "label": "archiving deletes nothing",
+          "sourceAnchor": "Archiving must not delete",
+          "pluginPattern": "Delete nothing"
+        },
+        {
+          "label": "the index is a table only",
+          "sourceAnchor": "Course Code",
+          "pluginPattern": "a table only"
+        },
+        {
+          "label": "status enum",
+          "sourceAnchor": "active",
+          "pluginPattern": "active \\| completed \\| archived"
+        },
+        {
+          "label": "AI Notes Output field",
+          "sourceAnchor": "AI Notes Output",
+          "pluginPattern": "AI Notes Output"
+        },
+        {
+          "label": "Knowledge Root field",
+          "sourceAnchor": "Knowledge Root",
+          "pluginPattern": "Knowledge Root"
+        },
+        {
+          "label": "sync preserves learning state",
+          "sourceAnchor": "SYNC",
+          "pluginPattern": "Never reset a studied unit"
+        },
+        {
+          "label": "source material is not copied in",
+          "sourceAnchor": "must NOT be copied|must not be copied",
+          "pluginPattern": "Never copy course material"
+        },
+        {
+          "label": "archive operation exists",
+          "sourceAnchor": "ARCHIVE",
+          "pluginPattern": "ARCHIVE"
+        }
+      ],
+      "divergences": [
+        "The upstream registry is a pair of Markdown files (COURSES.md + per-course COURSES_TEMPLATE-derived files) that the agent edits directly; Professor owns the same table inside `.professor/project.yaml` and only ever writes it through `professor_course_manage`. The upstream file names therefore no longer appear in a mandatory section — `COURSE_TEMPLATE.md` vs the real `COURSES_TEMPLATE.md` is now historical, because there is no template file at all.",
+        "The Knowledge Root is derived (`.professor/state/courses/<course_id>/`) instead of configured, so the registry field became a resolved location rather than an input.",
+        "Upstream splits course management across one skill; here it is one skill with the same operation names (REGISTER/SYNC/LOCATE/UPDATE/ARCHIVE).",
+        "The legacy Registry import moved into an explicitly Optional section: it is an explicit, user-initiated workflow, never part of a fresh install.",
+        "The directory contract distinguishes rebuildable indexes from persistent learning state and saved artifacts. Actual note/review fallback roots and the explicit per-artifact format gate supersede obsolete upstream assumptions.",
+        "Course AI-Notes output must be confirmed and passed as notes_root during registration; omission uses the project fallback, and the current update action does not accept notes_root."
+      ]
+    },
+    "professor-study": {
+      "sources": [
+        "${PERSONAL_AGENT_ROOT}/05_Skills/learning/study-session/SKILL.md",
+        "${PERSONAL_AGENT_ROOT}/04_Agents/Learning-Agent/MODES.md",
+        "${PERSONAL_AGENT_ROOT}/04_Agents/Learning-Agent/SYSTEM.md",
+        "${PROFESSOR_SOUL}"
+      ],
+      "checks": [
+        {
+          "label": "PPT mode",
+          "sourceAnchor": "MODE: PPT",
+          "pluginPattern": "PPT"
+        },
+        {
+          "label": "PROBLEM mode",
+          "sourceAnchor": "MODE: PROBLEM",
+          "pluginPattern": "PROBLEM"
+        },
+        {
+          "label": "CODING-TUTOR mode",
+          "sourceAnchor": "MODE: CODING-TUTOR",
+          "pluginPattern": "CODING-TUTOR"
+        },
+        {
+          "label": "progressive hints",
+          "sourceAnchor": "Hint 1",
+          "pluginPattern": "Hint 1"
+        },
+        {
+          "label": "mastery requires evidence",
+          "sourceAnchor": "mastered|does not mean|not mean",
+          "pluginPattern": "Reading or explaining does not mean mastery"
+        },
+        {
+          "label": "lightweight questions take no state write",
+          "sourceAnchor": "Lightweight|lightweight",
+          "pluginPattern": "Lightweight question"
+        },
+        {
+          "label": "TRANSLATE mode",
+          "sourceAnchor": "TRANSLATE",
+          "pluginPattern": "TRANSLATE"
+        },
+        {
+          "label": "READING mode",
+          "sourceAnchor": "READING",
+          "pluginPattern": "READING"
+        },
+        {
+          "label": "no fabricated professor claims",
+          "sourceAnchor": "fabricate",
+          "pluginPattern": "Never fabricate professor statements"
+        }
+      ],
+      "divergences": [
+        "Upstream splits the mode catalogue (MODES.md) from the session workflow (study-session); the plugin merges them into one skill because the preset exposes a single study entry point.",
+        "Algorithm Coach guidance is deliberately absent: for this workspace the user scoped the plugin to the course Professor, and Algorithm Coach is a separate bot.",
+        "The plugin adds its own bounded material-reading workflow: plan, source text, optional local OCR/structure enhancement, PDF images and session notes before teaching; runtime readiness and vision limits are explicit.",
+        "First-use PDF enhancement prepares a workspace-scoped runtime with shipped platform locks and model hashes; setup needs host Python 3.12 and network, while recognition is offline. Honest source absence and image interpretation were checked with the configured model.",
+        "2026-10-12 teaching-interaction update: request-intent handling (complete explanation / incremental tutoring / understanding check / hint-only), a graduated assistance ladder, optional targeted understanding checks, first-gap feedback with an error taxonomy, and assistance-aware evidence wording were added as original Professor text implementing docs/qa/2026-10-11-teaching-design/RESEARCH.md. The design was informed by four open-source skill repositories recorded there (bstellato/ai-teaching-skills MIT, learning-commons-org/agent-skills Apache-2.0, Jellypod-Inc/school-skills MIT, GarethManning/education-agent-skills CC BY-SA 4.0); no third-party wording was copied or adapted, so the two-sided checks above still verify the originally ported behaviours only.",
+        "2026-10-14: meaningful explanation depth is explicit near the start: prerequisites and notation, justified derivation, a worked example, usable knowledge connections, conditions/boundaries and transfer. Ordinary short lesson requests retain this depth; explicit brief/hint/check/translation requests keep their scope. The progressive default is deeper (version 2); existing saved preferences are not migrated or overwritten.",
+        "2026-10-14 readable-layout follow-up: continuous step bridges, semantic H1/H2 heading hierarchy, selective bold and labelled cues, render-aware plain mathematics for unknown/failed viewers, truthful table/tree/image visuals, and escaped literal bars inside Markdown table cells. Progressive preset version 3 carries this presentation preference; host CSS, permissions and saved snapshots remain unchanged."
+      ]
+    },
+    "professor-notes": {
+      "sources": [
+        "${PERSONAL_AGENT_ROOT}/05_Skills/learning/notes-manager/SKILL.md",
+        "${PERSONAL_AGENT_ROOT}/05_Skills/learning/course-manager/SKILL.md"
+      ],
+      "checks": [
+        {
+          "label": "format gate wording",
+          "sourceAnchor": "请选择笔记格式",
+          "pluginPattern": "请选择笔记格式"
+        },
+        {
+          "label": "AI notes destination",
+          "sourceAnchor": "AI-Notes",
+          "pluginPattern": "AI-Notes"
+        },
+        {
+          "label": "notes never land in Knowledge",
+          "sourceAnchor": "Knowledge",
+          "pluginPattern": "Never write final notes into the Knowledge"
+        },
+        {
+          "label": "provenance separation",
+          "sourceAnchor": "Additional explanation",
+          "pluginPattern": "Additional explanation"
+        },
+        {
+          "label": "deep-dive marker",
+          "sourceAnchor": "Deep Dive",
+          "pluginPattern": "重点掌握：加深讲解"
+        },
+        {
+          "label": "no silent overwrite",
+          "sourceAnchor": "overwrite|existing note",
+          "pluginPattern": "Never overwrite silently"
+        },
+        {
+          "label": "a note updates INDEX only",
+          "sourceAnchor": "INDEX",
+          "pluginPattern": "updates `INDEX\\.md`"
+        }
+      ],
+      "divergences": [
+        "The upstream skill also owns the study-mode teaching text; that moved to `professor-study` so this skill only covers artifacts.",
+        "Upstream could reuse a concrete registry default. The later approved plugin rule supersedes that behavior: every artifact needs an explicit format choice for the current request.",
+        "The format gate follows the previously approved runtime contract: a saved default never bypasses an explicit format choice for the current artifact. Creation is routed through the bundled professor_artifact_create tool and checked against created/files.",
+        "The skill resolves actual output roots through artifact_status, reads missing source bodies through material_read, and explicitly registers an index entry only after successful creation; INDEX remains a separate host filesystem edit, not an artifact or state_update side effect.",
+        "2026-10-14: ordinary review notes preserve definitions, intermediate reasoning, worked examples, prerequisite connections and conditions so they stand alone. Explicit summaries/formula sheets remain compact. Supplementary reasoning is labelled and note generation still provides no mastery evidence; format, output and provenance contracts are unchanged.",
+        "2026-10-14 readable-layout follow-up: preserve heading hierarchy already provided by the artifact tool, avoid duplicate titles, keep derivation bridges and selective emphasis, match math/visual syntax to the actual viewer, and escape literal vertical bars in pipe-table cells. Explicit summaries/formula sheets remain scoped; arbitrary HTML color or diagram source is not claimed as a rendered asset.",
+        "2026-10-15: explicit body_tex fragments in sections/examples/review derivations are the preferred one-pass LaTeX route; prose body remains escaped, generated-copy host edits remain repair/integration fallback. Fragment validation does not establish correct math or successful typesetting. Environment failure_class stops document repairs; visual coverage is reported from actual pages. Inspection-only reuse requires returned reused_prior_compile true, proving unchanged source fingerprint and actual PDF hash rather than an assumed no-change state."
+      ]
+    },
+    "professor-review": {
+      "sources": [
+        "${PROFESSOR_SOUL}",
+        "${PERSONAL_AGENT_ROOT}/05_Skills/learning/notes-manager/SKILL.md"
+      ],
+      "checks": [
+        {
+          "label": "priority map: weak points",
+          "sourceAnchor": "薄弱点",
+          "pluginPattern": "薄弱点"
+        },
+        {
+          "label": "priority map: hard points",
+          "sourceAnchor": "重难点",
+          "pluginPattern": "重难点"
+        },
+        {
+          "label": "priority map: high-frequency basics",
+          "sourceAnchor": "高频基础",
+          "pluginPattern": "高频基础"
+        },
+        {
+          "label": "priority map: unconfirmed scope",
+          "sourceAnchor": "待确认范围",
+          "pluginPattern": "待确认范围"
+        },
+        {
+          "label": "practice label: verbatim source question",
+          "sourceAnchor": "原题",
+          "pluginPattern": "原题"
+        },
+        {
+          "label": "practice label: adapted question",
+          "sourceAnchor": "改编题",
+          "pluginPattern": "改编题"
+        },
+        {
+          "label": "practice label: newly generated",
+          "sourceAnchor": "新编练习",
+          "pluginPattern": "新编练习"
+        },
+        {
+          "label": "deep dives feed the plan",
+          "sourceAnchor": "Requested Deep Dives",
+          "pluginPattern": "requested deep dives"
+        }
+      ],
+      "divergences": [
+        "Review behaviour lives in the Hermes persona (SOUL.md), not in a Personal-Agent skill; it therefore has no Personal-Agent source counterpart, and the plugin makes it an explicit on-demand skill.",
+        "The review artifact is written as a separate file rather than appended to lecture notes, matching the upstream rule that it must not overwrite ordinary notes.",
+        "Review uses bundled course/state/material tools, reports absent state honestly, saves only when requested, and resolves the review output root rather than assuming the lecture-note root. Practice origins and creation evidence follow artifact_create."
+      ]
+    },
+    "professor-research": {
+      "sources": [
+        "${PERSONAL_AGENT_ROOT}/05_Skills/research/web-research-evidence/SKILL.md"
+      ],
+      "checks": [
+        {
+          "label": "evidence section is called 资料依据",
+          "sourceAnchor": "资料依据",
+          "pluginPattern": "资料依据"
+        },
+        {
+          "label": "citations are never fabricated",
+          "sourceAnchor": "fabricate",
+          "pluginPattern": "Never fabricate a citation"
+        },
+        {
+          "label": "authoritative sources preferred",
+          "sourceAnchor": "authoritative",
+          "pluginPattern": "authoritative"
+        },
+        {
+          "label": "explicit search triggers",
+          "sourceAnchor": "search",
+          "pluginPattern": "When to search"
+        }
+      ],
+      "divergences": [
+        "Upstream relies on Hermes web plugins; here the preset mounts the Harness `tool-web` capability and the skill states the same evidence discipline.",
+        "Research is conditional on actual host web tools; unavailable access is disclosed, no search is simulated, and unknown publication dates are not invented."
+      ]
+    },
+    "professor-latex": {
+      "sources": [
+        "${PERSONAL_AGENT_ROOT}/05_Skills/learning/latex-notes-quality/SKILL.md",
+        "${PERSONAL_AGENT_ROOT}/05_Skills/learning/notes-manager/SKILL.md",
+        "${PERSONAL_AGENT_ROOT}/06_Shared/Templates/LaTeX/Course-Notes/Default/main.tex",
+        "${PERSONAL_AGENT_ROOT}/06_Shared/Templates/LaTeX/Course-Notes/Default/metadata.tex"
+      ],
+      "checks": [
+        {
+          "label": "prefer latexmk",
+          "sourceAnchor": "latexmk",
+          "pluginPattern": "latexmk"
+        },
+        {
+          "label": "xelatex program",
+          "sourceAnchor": "xelatex",
+          "pluginPattern": "xelatex"
+        },
+        {
+          "label": "compile verdict line",
+          "sourceAnchor": "编译",
+          "pluginPattern": "编译：通过/未执行/失败"
+        },
+        {
+          "label": "template resolution: a configured template, else a self-contained project",
+          "sourceAnchor": "Course-Notes/Default|06_Shared/Templates/LaTeX",
+          "pluginPattern": "self-contained"
+        },
+        {
+          "label": "template is inspected before content is added",
+          "sourceAnchor": "source of truth|document class",
+          "pluginPattern": "Validate the project before writing content"
+        },
+        {
+          "label": "driver file pulls in the parts",
+          "sourceAnchor": "input\\{preamble\\}",
+          "pluginPattern": "main\\.tex"
+        },
+        {
+          "label": "metadata variables are filled from the course",
+          "sourceAnchor": "coursecode",
+          "pluginPattern": "\\\\coursecode"
+        },
+        {
+          "label": "never overwrite the user's template",
+          "sourceAnchor": "never overwrite the user's original template",
+          "pluginPattern": "Never edit, tidy or"
+        }
+      ],
+      "divergences": [
+        "The template is no longer assumed to exist. Upstream always copied a shared default template from the dependency workspace (${PERSONAL_AGENT_ROOT}/06_Shared/Templates/LaTeX/Course-Notes/Default/); the plugin resolves the course's configured LaTeX Template when it names a real directory and otherwise generates a self-contained project, so a fresh install with no template library still produces a compilable note.",
+        "The shared note format gate requires an explicit LaTeX choice for the current artifact, consistent with professor-notes and the runtime tool; saved defaults do not bypass it.",
+        "The bundled artifact and latex_compile tools are the operational authority: the fallback has main.tex/content.tex/professor-metadata.tex, metadata uses Professor-prefixed macros, tool text inputs are escaped, and the skill inspects/edits only the generated copy before a bounded compilation repair loop. Compilation and PDF inspection remain separate evidence.",
+        "2026-10-15: the self-contained default now reads bundled resources/latex/default/main.tex, adapted from the user-supplied CSC3001note2.tex, with a verbatim reference shipped separately. The default preserves dual large titles, separator and compact paragraphs; adds portable XeLaTeX/Fandol CJK, larger semantic headings, named emphasis boxes and original diagram/code facilities; uses course/request metadata instead of the reference identity. Explicit usable custom templates retain precedence. Skill documentation names actual default facilities and keeps generated-copy editing and independent compile/visual gates.",
+        "2026-10-15: explicit body_tex fragments in sections/examples/review derivations are the preferred one-pass LaTeX route; prose body remains escaped, generated-copy host edits remain repair/integration fallback. Fragment validation does not establish correct math or successful typesetting. Environment failure_class stops document repairs; visual coverage is reported from actual pages. Inspection-only reuse requires returned reused_prior_compile true, proving unchanged source fingerprint and actual PDF hash rather than an assumed no-change state."
+      ]
+    }
+  },
+  "excluded": [
+    {
+      "source": "05_Skills/learning/algorithm-coach/SKILL.md",
+      "reason": "Algorithm Coach is a separate Hermes bot; the user scoped this plugin to the course Professor."
+    },
+    {
+      "source": "05_Skills/projects/agent-handoff/SKILL.md",
+      "reason": "Project-development workflow, unrelated to academic Professor behaviour."
+    },
+    {
+      "source": "05_Skills/projects/hermes-routing/SKILL.md",
+      "reason": "Hermes/OpenCode project routing; out of scope for a course assistant."
+    },
+    {
+      "source": "05_Skills/projects/project-discovery/SKILL.md",
+      "reason": "Project discovery workflow."
+    },
+    {
+      "source": "05_Skills/projects/project-orchestrator/SKILL.md",
+      "reason": "Project orchestration workflow."
+    },
+    {
+      "source": "05_Skills/projects/project-verification/SKILL.md",
+      "reason": "Project acceptance workflow."
+    },
+    {
+      "source": "05_Skills/projects/safe-opencode-execution/SKILL.md",
+      "reason": "Bounded OpenCode execution; not academic Professor behaviour."
+    }
+  ],
+  "noAliases": {
+    "decision": "No compatibility aliases are shipped.",
+    "rationale": "The user scoped the bundle to the course Professor, so the six professor-* names are the catalog. The old names are still mapped below for migration reference only.",
+    "mapping": {
+      "study-session": "professor-study",
+      "notes-manage": "professor-notes",
+      "courses-manage": "professor-course-management",
+      "latex-notes-quality": "professor-latex",
+      "web-research-evidence": "professor-research",
+      "course-manager (source dir)": "professor-course-management"
+    }
+  }
+}

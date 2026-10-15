@@ -1,0 +1,77 @@
+{
+  "name": "dsh-professor-spike",
+  "version": "0.12.0-beta.1",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "Professor: a preset-scoped DeepSeek Harness plugin bundle for academic study assistance (course registry, material indexing, learning state, study notes, exam reviews and LaTeX artifacts).",
+  "type": "module",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "index.js",
+    "src",
+    "client",
+    "skills",
+    "resources/enhance",
+    "resources/latex",
+    "cordis.patch.yml",
+    "tools",
+    "test",
+    "verify-plugin-skills.mjs",
+    "THIRD_PARTY_LICENSES.md"
+  ],
+  "exports": {
+    ".": {
+      "default": "./index.js"
+    },
+    "./client": {
+      "default": "./client/client.js"
+    },
+    "./remote": {
+      "default": "./client/remote.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "verify:syntax": "node tools/verify-syntax.mjs",
+    "verify:skills": "node verify-plugin-skills.mjs",
+    "verify:sync": "node tools/verify-skill-sync.mjs",
+    "verify:dist": "node tools/verify-distribution.mjs",
+    "verify:publication": "node tools/verify-publication.mjs",
+    "verify:e2e": "node tools/verify-e2e.mjs",
+    "verify:preset": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-preset.mjs",
+    "verify:composition": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-profile-composition.mjs",
+    "verify:boot": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-runtime-boot.mjs",
+    "verify:host": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-host-schemas.mjs",
+    "verify:material": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-material-delivery.mjs",
+    "verify:activation": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-preset-activation.mjs",
+    "verify:desktop": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-desktop-activation.mjs",
+    "verify:api": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-harness-api.mjs",
+    "verify:app-storage": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-app-storage.mjs",
+    "verify:packaged": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-packaged-acceptance.mjs",
+    "verify:memory-restart": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-memory-restart.mjs",
+    "verify:native-session": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-native-session.mjs",
+    "verify:teaching-model": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-teaching-model.mjs",
+    "verify:teaching-aggregate": "node tools/rebuild-teaching-aggregate.mjs",
+    "verify:onboarding": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-onboarding.mjs",
+    "verify:home": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-home.mjs",
+    "verify:customization": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-customization.mjs",
+    "verify:ui-bridge": "ELECTRON_RUN_AS_NODE=1 \"${DSH_HARNESS_BIN:-/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness}\" tools/verify-ui-bridge.mjs",
+    "verify:harness": "npm run verify:preset && npm run verify:composition && npm run verify:boot && npm run verify:host && npm run verify:activation && npm run verify:desktop && npm run verify:api && npm run verify:app-storage",
+    "verify": "npm run verify:syntax && npm run verify:skills && npm run verify:sync && npm run verify:dist && npm run verify:publication && npm run verify:e2e && npm test"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-api-remotes"
+      ]
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
